@@ -1,0 +1,279 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Movie Search Application</title>
+    <style>
+        /* Global Styles */
+        body {
+            background-color: rgb(90, 94, 93);
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        #search-container {
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        /* Input, Select, Button */
+        input,
+        select,
+        .btn {
+            margin: 5px;
+            padding: 8px;
+            font-size: 14px;
+        }
+
+        .custom-btn {
+            width: 130px;
+            height: 40px;
+            color: #fff;
+            border-radius: 5px;
+            padding: 10px 25px;
+            font-family: 'Lato', sans-serif;
+            font-weight: 500;
+            background: transparent;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            display: inline-block;
+            box-shadow: inset 2px 2px 2px 0px rgba(255, 255, 255, .5),
+                7px 7px 20px 0px rgba(0, 0, 0, .1),
+                4px 4px 5px 0px rgba(0, 0, 0, .1);
+            outline: none;
+        }
+
+        /* 5 */
+        .btn-5 {
+            width: 130px;
+            height: 40px;
+            line-height: 42px;
+            padding: 0;
+            border: none;
+            background: rgb(94, 255, 0);
+            background: linear-gradient(0deg, rgb(89, 255, 0) 0%, rgb(2, 251, 2) 100%);
+        }
+
+        .btn-5:hover {
+            color: #3bf009;
+            background: transparent;
+            box-shadow: none;
+        }
+
+        .btn-5:before,
+        .btn-5:after {
+            content: '';
+            position: absolute;
+            top: 0;
+            right: 0;
+            height: 2px;
+            width: 0;
+            background: #75f009;
+            box-shadow:
+                -1px -1px 5px 0px #fff,
+                7px 7px 20px 0px #0003,
+                4px 4px 5px 0px #0002;
+            transition: 400ms ease all;
+        }
+
+        .btn-5:after {
+            right: inherit;
+            top: inherit;
+            left: 0;
+            bottom: 0;
+        }
+
+        .btn-5:hover:before,
+        .btn-5:hover:after {
+            width: 100%;
+            transition: 800ms ease all;
+        }
+
+
+        /* Movie Container */
+        #movie-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 20px;
+        }
+
+        /* Movie Card */
+        .movie-card {
+            border: 1px solid #ddd;
+            border-radius: 8px;
+            overflow: hidden;
+            width: 300px;
+            text-align: center;
+            background-color: #fff;
+            transition: transform 0.2s, box-shadow 0.2s;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+        }
+
+        .movie-card:hover {
+            transform: scale(1.05);
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+        }
+
+        /* Movie Card Image */
+        .movie-card img {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+        }
+
+        /* Movie Details */
+        .movie-details {
+            padding: 10px;
+        }
+
+        h3 {
+            margin: 0;
+        }
+
+        /* Movie Rating */
+        .rating {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background-color: #f5f5f5;
+            padding: 8px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .rating span {
+            margin-left: 5px;
+        }
+
+        /* Views and Score */
+        .views,
+        .score {
+            margin-top: 10px;
+            font-size: 12px;
+            color: #888;
+        }
+    </style>
+</head>
+
+<body>
+    
+    <div id="search-container">
+        <h3 style="padding-top: 30px; padding-bottom: 30px;"> <a href="index.html" style="text-decoration: none; font-family: 'Franklin Gothic Medium', 'Arial Narrow', Arial, sans-serif; font-size: 34px;">Movie Listing</a></h3>
+        <label for="query" >Search Title:</label>
+        <input type="text" id="query" placeholder="Enter search query" list="suggestions">
+        <datalist id="suggestions"></datalist>
+
+        <label for="type">Filter by:</label>
+        <select id="type">
+            <option value="movie">Movies</option>
+            <option value="tv">TV Show</option>
+        </select>
+
+        <button onclick="searchMovies()" class="custom-btn btn-5">Search</button>
+    </div>
+
+    <div id="movie-container"></div>
+</body>
+<script>
+    const queryInput = document.getElementById('query');
+    queryInput.addEventListener('input', fetchSuggestions);
+
+    function fetchSuggestions() {
+        const apiKey = '2b074df46a4bf037b64473fc6b421c84'; // Replace with your TMDb API key
+        const url = `https://api.themoviedb.org/3/trending/movie/week?api_key=${apiKey}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => updateSuggestions(data.results))
+            .catch(error => console.error('Error fetching suggestions:', error));
+    }
+
+    function updateSuggestions(movies) {
+        const suggestionsList = document.getElementById('suggestions');
+        suggestionsList.innerHTML = '';
+
+        movies.forEach(movie => {
+            const option = document.createElement('option');
+            option.value = movie.title;
+            suggestionsList.appendChild(option);
+        });
+    }
+
+    function searchMovies() {
+        const query = document.getElementById('query').value;
+        const type = document.getElementById('type').value;
+        const apiKey = '2b074df46a4bf037b64473fc6b421c84'; // Replace with your TMDb API key
+
+        const url = `https://api.themoviedb.org/3/search/${type}?api_key=${apiKey}&query=${query}`;
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => displayMovies(data.results))
+            .catch(error => console.error('Error fetching data:', error));
+    }
+
+
+    function displayMovies(movies) {
+        const container = document.getElementById('movie-container');
+        container.innerHTML = '';
+
+        if (movies.length === 0) {
+            const noResults = document.createElement('p');
+            noResults.textContent = 'No results found.';
+            container.appendChild(noResults);
+            return;
+        }
+
+        movies.forEach(movie => {
+            const movieCard = document.createElement('div');
+            movieCard.classList.add('movie-card');
+
+            const image = document.createElement('img');
+            image.src = `https://image.tmdb.org/t/p/w500${movie.poster_path}`;
+            image.alt = movie.title;
+
+            const details = document.createElement('div');
+            details.classList.add('movie-details');
+
+            const title = document.createElement('h3');
+            title.textContent = movie.title || movie.name;
+
+            const rating = document.createElement('div');
+            rating.classList.add('rating');
+            rating.innerHTML = `
+                    <svg height="16" width="16" fill="#f7b731" viewBox="0 0 16 16">
+                        <path d="M8 0L10.5289 4.47214L15.7224 5.8541L12.1112 9.47214L12.9444 14.1459L8 11.9721L3.05561 14.1459L3.88877 9.47214L0.277587 5.8541L5.47113 4.47214L8 0Z"/>
+                    </svg>
+                    <span>${movie.vote_average}</span>
+                `;
+
+            const views = document.createElement('div');
+            views.classList.add('views');
+            views.textContent = `${movie.popularity} views`;
+
+            const score = document.createElement('div');
+            score.classList.add('score');
+            score.textContent = `Score: ${movie.vote_average}`;
+
+            details.appendChild(title);
+            details.appendChild(rating);
+            details.appendChild(views);
+            details.appendChild(score);
+
+            movieCard.appendChild(image);
+            movieCard.appendChild(details);
+
+            container.appendChild(movieCard);
+        });
+    }
+
+    // Call searchMovies initially when the page loads
+    window.addEventListener('load', searchMovies);
+</script>
+
+</html>
